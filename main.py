@@ -1,10 +1,19 @@
 import cv2
 import mediapipe as mp
+import numpy as np
+from ObjectDetection import TeachableMachineModel
 
 # Inisialisasi MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands()
 mp_drawing = mp.solutions.drawing_utils
+
+# Path to the model and label files
+model_path = "tflite_model/model_unquant.tflite"
+label_path = "tflite_model/labels.txt"
+
+# Load the Teachable Machine model
+model = TeachableMachineModel(model_path, label_path)
 
 # Fungsi untuk mendeteksi gesture tangan, menampilkan skeleton, dan bounding box
 def detect_hand_gesture(image):
@@ -23,10 +32,6 @@ def detect_hand_gesture(image):
             cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
             bounding_boxes.append((x_min, y_min, x_max, y_max))
 
-            # Tambahkan label
-            label = "Kanan" if is_right_hand else "Kiri"
-            cv2.putText(image, label, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            
             # Gambar skeleton tangan
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             # Crop gambar sesuai dengan bounding box
@@ -34,8 +39,22 @@ def detect_hand_gesture(image):
             # Tampilkan gambar crop sesuai dengan tangan kanan atau kiri
             if cropped_image is not None:
                 if is_right_hand:
+                    # Make predictions
+                    predictions = model.predict(cropped_image)
+                    label_index = np.argmax(predictions)
+                    labelModel = model.labels[label_index]
+                    label = "Kanan" if is_right_hand else "Kiri"
+                    cv2.putText(image, label+" "+labelModel, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                    # print("Predicted label:", label)
                     cv2.imshow("Tangan kanan", cropped_image)
                 else:
+                    # Make predictions
+                    predictions = model.predict(cropped_image)
+                    label_index = np.argmax(predictions)
+                    labelModel = model.labels[label_index]
+                    label = "Kanan" if is_right_hand else "Kiri"
+                    cv2.putText(image, label+" "+labelModel, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                    print("Predicted label:", label)
                     cv2.imshow("Tangan kiri", cropped_image)
     # Crop gambar sesuai dengan bounding box tangan
     if len(bounding_boxes) == 2:

@@ -1,0 +1,6 @@
+0 Mengepal_L
+1 Mengepal_R
+2 Telapak_L
+3 Telapak_R
+4 Random_L
+5 Random_R
